@@ -178,7 +178,7 @@
             .then(response => response.json())
             .then(data => {
                 deckLenght = data.remaining;
-                for(var card of data.cards)
+                for(let card of data.cards)
                 {
                     var newCard = getCardData(card);
                     players[currentPlayer].Hand.push(newCard);
@@ -208,7 +208,7 @@
             let winner = -1;
             let score = 0;
 
-            for(var i = 0; i < players.length; i++)
+            for(let i = 0; i < players.length; i++)
             {
                 if (players[i].Points > score && players[i].Points < 22)
                 {
