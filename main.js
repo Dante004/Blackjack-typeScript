@@ -38,9 +38,9 @@ function createPlayersUI() {
     }
 }
 function startblackjack(playersAmount) {
-    document.getElementById('btnStart1').nodeValue = 'Restart';
+    document.getElementById('btnStart1').value = 'Restart';
     document.getElementById('btnStart1').onclick = Restart;
-    document.getElementById('btnStart2').nodeValue = 'Return to main menu';
+    document.getElementById('btnStart2').value = 'Return to main menu';
     document.getElementById('btnStart2').onclick = Return;
     document.getElementById("status").style.display = "none";
     currentPlayer = 0;
@@ -185,9 +185,9 @@ function Restart() {
     startblackjack(players.length);
 }
 function Return() {
-    document.getElementById('btnStart1').nodeValue = 'Start 1 player';
+    document.getElementById('btnStart1').value = 'Start 1 player';
     document.getElementById('btnStart1').onclick = function () { return startblackjack(1); };
-    document.getElementById('btnStart2').nodeValue = 'Start 2 player';
+    document.getElementById('btnStart2').value = 'Start 2 player';
     document.getElementById('btnStart2').onclick = function () { return startblackjack(2); };
     document.getElementById('players').innerHTML = '';
 }

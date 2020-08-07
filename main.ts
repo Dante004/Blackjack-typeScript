@@ -52,9 +52,9 @@
 
         function startblackjack(playersAmount)
         {
-            document.getElementById('btnStart1').nodeValue = 'Restart';
+            (<HTMLInputElement>document.getElementById('btnStart1')).value = 'Restart';
             document.getElementById('btnStart1').onclick = Restart;
-            document.getElementById('btnStart2').nodeValue = 'Return to main menu';
+            (<HTMLInputElement>document.getElementById('btnStart2')).value = 'Return to main menu';
             document.getElementById('btnStart2').onclick = Return;
             document.getElementById("status").style.display="none";
             currentPlayer = 0;
@@ -244,9 +244,9 @@
 
         function Return()
         {
-            document.getElementById('btnStart1').nodeValue = 'Start 1 player';
+            (<HTMLInputElement>document.getElementById('btnStart1')).value = 'Start 1 player';
             document.getElementById('btnStart1').onclick = () => startblackjack(1);
-            document.getElementById('btnStart2').nodeValue = 'Start 2 player';
+            (<HTMLInputElement>document.getElementById('btnStart2')).value = 'Start 2 player';
             document.getElementById('btnStart2').onclick = () => startblackjack(2);
 
             document.getElementById('players').innerHTML = '';
