@@ -158,7 +158,7 @@ const hitMe = async () => {
         const data = await response.json();
         deckLenght = data.remaining;
         for (let card of data.cards) {
-            var newCard = getCardData(card);
+            let newCard = getCardData(card);
             players[currentPlayer].Hand.push(newCard);
             renderCard(newCard, currentPlayer);
             updatePoints();
@@ -189,7 +189,7 @@ const botTurn = async (bot) => {
             await hitMe();
         }
         else {
-            var random = Math.random();
+            let random = Math.random();
             if (random < 0.5) {
                 await hitMe();
             }

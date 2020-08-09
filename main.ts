@@ -226,7 +226,7 @@
                 deckLenght = data.remaining;
                 for (let card of data.cards) 
                 {
-                    var newCard = getCardData(card);
+                    let newCard = getCardData(card);
                     players[currentPlayer].Hand.push(newCard);
                     renderCard(newCard, currentPlayer);
                     updatePoints();
@@ -268,7 +268,7 @@
                 }
                 else
                 {
-                    var random = Math.random();
+                    let random = Math.random();
                     if(random < 0.5)
                     {
                         await hitMe();
