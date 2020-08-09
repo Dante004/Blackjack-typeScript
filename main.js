@@ -3,6 +3,7 @@ let currentPlayer = 0;
 let deckId = 0;
 let deckLenght = 0;
 let botPlayer = false;
+let gameIsActive = false;
 const createDeck = () => {
     fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
         .then(response => response.json())
@@ -54,6 +55,7 @@ const startblackjack = (botIsPlayer) => {
     document.getElementById('btnStart2').value = 'Return to main menu';
     document.getElementById('btnStart2').onclick = Return;
     document.getElementById("status").style.display = "none";
+    gameIsActive = true;
     currentPlayer = 0;
     botPlayer = botIsPlayer;
     createDeck();
@@ -85,6 +87,7 @@ const checkAce = (player) => {
     if (aceCount == 2) {
         document.getElementById('status').innerHTML = 'Winner: Player ' + player.ID;
         document.getElementById("status").style.display = "inline-block";
+        gameIsActive = false;
     }
 };
 const getCardData = (card) => {
@@ -122,7 +125,7 @@ const renderCard = (card, player) => {
     hand.appendChild(getCardUI(card));
 };
 const getCardUI = (card) => {
-    let el = document.createElement('div');
+    let element = document.createElement('div');
     let icon = '';
     if (card.Suit == 'HEARTS')
         icon = '&hearts;';
@@ -132,9 +135,9 @@ const getCardUI = (card) => {
         icon = '&diams;';
     else
         icon = '&clubs;';
-    el.className = 'card';
-    el.innerHTML = card.Value + '<br/>' + icon;
-    return el;
+    element.className = 'card';
+    element.innerHTML = card.Value + '<br/>' + icon;
+    return element;
 };
 const getPoints = (player) => {
     let points = 0;
@@ -142,7 +145,6 @@ const getPoints = (player) => {
         points += players[player].Hand[i].Weight;
     }
     players[player].Points = points;
-    return points;
 };
 const updatePoints = () => {
     for (let i = 0; i < players.length; i++) {
@@ -151,30 +153,34 @@ const updatePoints = () => {
     }
 };
 const hitMe = async () => {
-    const response = await fetch('https://deckofcardsapi.com/api/deck/' + deckId + '/draw/?count=1');
-    const data = await response.json();
-    deckLenght = data.remaining;
-    for (let card of data.cards) {
-        var newCard = getCardData(card);
-        players[currentPlayer].Hand.push(newCard);
-        renderCard(newCard, currentPlayer);
-        updatePoints();
-        updateDeckLenght();
-        check();
+    if (gameIsActive == true) {
+        const response = await fetch('https://deckofcardsapi.com/api/deck/' + deckId + '/draw/?count=1');
+        const data = await response.json();
+        deckLenght = data.remaining;
+        for (let card of data.cards) {
+            var newCard = getCardData(card);
+            players[currentPlayer].Hand.push(newCard);
+            renderCard(newCard, currentPlayer);
+            updatePoints();
+            updateDeckLenght();
+            check();
+        }
     }
 };
 const stay = () => {
-    if (currentPlayer != players.length - 1) {
-        document.getElementById('player_' + currentPlayer).classList.remove('active');
-        currentPlayer += 1;
-        document.getElementById('player_' + currentPlayer).classList.add('active');
-        if (players[currentPlayer].Name == "Bot") {
-            botTurn(players[currentPlayer]);
+    if (gameIsActive == true) {
+        if (currentPlayer != players.length - 1) {
+            document.getElementById('player_' + currentPlayer).classList.remove('active');
+            currentPlayer += 1;
+            document.getElementById('player_' + currentPlayer).classList.add('active');
+            if (players[currentPlayer].Name == "Bot") {
+                botTurn(players[currentPlayer]);
+            }
         }
-    }
-    else {
-        document.getElementById('player_' + currentPlayer).classList.remove('active');
-        end();
+        else {
+            document.getElementById('player_' + currentPlayer).classList.remove('active');
+            end();
+        }
     }
 };
 const botTurn = async (bot) => {
@@ -205,12 +211,13 @@ const end = () => {
     }
     document.getElementById('status').innerHTML = 'Winner: Player ' + players[winner].ID;
     document.getElementById("status").style.display = "inline-block";
+    gameIsActive = false;
 };
 const check = () => {
     if (players[currentPlayer].Points > 21) {
         document.getElementById('status').innerHTML = 'Player: ' + players[currentPlayer].ID + ' LOST';
         document.getElementById('status').style.display = "inline-block";
-        end();
+        gameIsActive = false;
     }
 };
 const updateDeckLenght = () => {

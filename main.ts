@@ -4,6 +4,7 @@
         let deckId : number = 0;
         let deckLenght : number = 0;
         let botPlayer : boolean = false;
+        let gameIsActive : boolean = false;
 
         interface Card{
             Value : string;
@@ -84,7 +85,10 @@
             document.getElementById('btnStart1').onclick = Restart;
             (<HTMLInputElement>document.getElementById('btnStart2')).value = 'Return to main menu';
             document.getElementById('btnStart2').onclick = Return;
+
             document.getElementById("status").style.display="none";
+
+            gameIsActive = true;
             currentPlayer = 0;
             botPlayer = botIsPlayer;
             createDeck();
@@ -120,10 +124,13 @@
 
         const checkAce = (player : Player) => {
             let aceCount = player.Hand.filter(x => x.Value == "A").length;
+            
             if(aceCount == 2)
             {
                 document.getElementById('status').innerHTML = 'Winner: Player ' + player.ID;
                 document.getElementById("status").style.display = "inline-block";
+
+                gameIsActive = false;
             }
         }
 
@@ -175,7 +182,7 @@
 
         const getCardUI = (card : Card) =>
         {
-            let el = document.createElement('div');
+            let element = document.createElement('div');
             let icon = '';
             if (card.Suit == 'HEARTS')
             icon='&hearts;';
@@ -186,9 +193,9 @@
             else
             icon = '&clubs;';
             
-            el.className = 'card';
-            el.innerHTML = card.Value + '<br/>' + icon;
-            return el;
+            element.className = 'card';
+            element.innerHTML = card.Value + '<br/>' + icon;
+            return element;
         }
 
         const getPoints = (player : number) =>
@@ -199,7 +206,6 @@
                 points += players[player].Hand[i].Weight;
             }
             players[player].Points = points;
-            return points;
         }
 
         const updatePoints = () =>
@@ -213,34 +219,43 @@
 
         const hitMe = async () =>
         {
-            const response = await fetch('https://deckofcardsapi.com/api/deck/' + deckId + '/draw/?count=1');
-            const data = await response.json();
-            deckLenght = data.remaining;
-            for (let card of data.cards) {
-                var newCard = getCardData(card);
-                players[currentPlayer].Hand.push(newCard);
-                renderCard(newCard, currentPlayer);
-                updatePoints();
-                updateDeckLenght();
-                check();
+            if(gameIsActive == true)
+            {
+                const response = await fetch('https://deckofcardsapi.com/api/deck/' + deckId + '/draw/?count=1');
+                const data = await response.json();
+                deckLenght = data.remaining;
+                for (let card of data.cards) 
+                {
+                    var newCard = getCardData(card);
+                    players[currentPlayer].Hand.push(newCard);
+                    renderCard(newCard, currentPlayer);
+                    updatePoints();
+                    updateDeckLenght();
+                    check();
+                }
             }
         }
 
         const stay = () =>
         {
-            if (currentPlayer != players.length-1) {
-                document.getElementById('player_' + currentPlayer).classList.remove('active');
-                currentPlayer += 1;
-                document.getElementById('player_' + currentPlayer).classList.add('active');
-
-                if(players[currentPlayer].Name == "Bot")
+            if(gameIsActive == true)
+            {
+                if (currentPlayer != players.length-1) 
                 {
-                    botTurn(players[currentPlayer]);
+                    document.getElementById('player_' + currentPlayer).classList.remove('active');
+                    currentPlayer += 1;
+                    document.getElementById('player_' + currentPlayer).classList.add('active');
+    
+                    if(players[currentPlayer].Name == "Bot")
+                    {
+                        botTurn(players[currentPlayer]);
+                    }
                 }
-            }
-            else {
-                document.getElementById('player_' + currentPlayer).classList.remove('active');
-                end();
+                else 
+                {
+                    document.getElementById('player_' + currentPlayer).classList.remove('active');
+                    end();
+                }
             }
         }
 
@@ -284,6 +299,8 @@
 
             document.getElementById('status').innerHTML = 'Winner: Player ' + players[winner].ID;
             document.getElementById("status").style.display = "inline-block";
+
+            gameIsActive = false;
         }
 
         const check = () =>
@@ -292,7 +309,8 @@
             {
                 document.getElementById('status').innerHTML = 'Player: ' + players[currentPlayer].ID + ' LOST';
                 document.getElementById('status').style.display = "inline-block";
-                end();
+
+                gameIsActive = false;
             }
         }
 
