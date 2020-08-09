@@ -1,10 +1,24 @@
 
-        let players = new Array();
-        let currentPlayer = 0;
-        let deckId = 0;
-        let deckLenght = 0;
+        let players = new Array;
+        let currentPlayer : number = 0;
+        let deckId : number = 0;
+        let deckLenght : number = 0;
+        let botPlayer : boolean = false;
 
-        function createDeck()
+        interface Card{
+            Value : string;
+            Suit : string;
+            Weight : number;
+        }
+
+        interface Player{
+            Name : string;
+            ID : number;
+            Points : number;
+            Hand : Array<Card>;
+        }
+
+        const createDeck = () =>
         {
             fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
             .then(response => response.json())
@@ -15,18 +29,32 @@
 
         }
 
-        function createPlayers(num)
+        const createPlayers = (botIsPlayer : boolean) =>
         {
             players = new Array();
-            for(let i = 1; i <= num; i++)
+            if(!botIsPlayer)
+            {
+                for(let i = 1; i <= 2; i++)
+                {
+                    let hand = new Array();
+                    let player : Player = { Name: 'Player ' + i, ID: i, Points: 0, Hand: hand };
+                    players.push(player);
+                }
+            }
+            else
             {
                 let hand = new Array();
-                let player = { Name: 'Player ' + i, ID: i, Points: 0, Hand: hand };
+                let player : Player = { Name: 'Player ' + 1, ID: 1, Points: 0, Hand: hand };
                 players.push(player);
+
+                let handBot = new Array();
+                let bot : Player = { Name: 'Bot', ID: 2, Points: 0, Hand: handBot};
+                players.push(bot);
             }
+
         }
 
-        function createPlayersUI()
+        const createPlayersUI = () =>
         {
             document.getElementById('players').innerHTML = '';
             for(let i = 0; i < players.length; i++)
@@ -50,7 +78,7 @@
             }
         }
 
-        function startblackjack(playersAmount)
+        const startblackjack = (botIsPlayer : boolean) =>
         {
             (<HTMLInputElement>document.getElementById('btnStart1')).value = 'Restart';
             document.getElementById('btnStart1').onclick = Restart;
@@ -58,14 +86,15 @@
             document.getElementById('btnStart2').onclick = Return;
             document.getElementById("status").style.display="none";
             currentPlayer = 0;
+            botPlayer = botIsPlayer;
             createDeck();
-            createPlayers(playersAmount);
+            createPlayers(botIsPlayer);
             createPlayersUI();
             document.getElementById('player_' + currentPlayer).classList.add('active');
         }
         
 
-        function dealHands()
+        const dealHands = () =>
         {
            for(let i = 0; i < 2; i++)
            {
@@ -81,18 +110,28 @@
                             players[x].Hand.push(newCard);
                             renderCard(newCard, x);
                             updatePoints();
-                            updateDeck();
+                            updateDeckLenght();
+                            checkAce(players[x]);
                         });
                     });
                 }
             }
         }
 
-        function getCardData(card)
+        const checkAce = (player : Player) => {
+            let aceCount = player.Hand.filter(x => x.Value == "A").length;
+            if(aceCount == 2)
+            {
+                document.getElementById('status').innerHTML = 'Winner: Player ' + player.ID;
+                document.getElementById("status").style.display = "inline-block";
+            }
+        }
+
+        const getCardData = (card) =>
         {
-            let weight;
+            let weight : number;
             let value = card.value;
-            let newValue;
+            let newValue : string;
 
             if(value == "0")
             {
@@ -128,13 +167,13 @@
             return { Value: newValue, Suit: card.suit, Weight: weight };
         }
 
-        function renderCard(card, player)
+        const renderCard = (card : Card, player : number) =>
         {
             let hand = document.getElementById('hand_' + player);
             hand.appendChild(getCardUI(card));
         }
 
-        function getCardUI(card)
+        const getCardUI = (card : Card) =>
         {
             let el = document.createElement('div');
             let icon = '';
@@ -152,7 +191,7 @@
             return el;
         }
 
-        function getPoints(player)
+        const getPoints = (player : number) =>
         {
             let points = 0;
             for(let i = 0; i < players[player].Hand.length; i++)
@@ -163,47 +202,72 @@
             return points;
         }
 
-        function updatePoints()
+        const updatePoints = () =>
         {
             for (let i = 0 ; i < players.length; i++)
             {
                 getPoints(i);
-                document.getElementById('points_' + i).innerHTML = players[i].Points;
+                document.getElementById('points_' + i).innerHTML = <string><any>players[i].Points;
             }
         }
 
-        function hitMe()
+        const hitMe = async () =>
         {
-            fetch('https://deckofcardsapi.com/api/deck/' + deckId + '/draw/?count=1')
-            .then(response => response.json())
-            .then(data => {
-                deckLenght = data.remaining;
-                for(let card of data.cards)
-                {
-                    var newCard = getCardData(card);
-                    players[currentPlayer].Hand.push(newCard);
-                    renderCard(newCard, currentPlayer);
-                    updatePoints();
-                    updateDeck();
-                    check();
-                }
-            });
+            const response = await fetch('https://deckofcardsapi.com/api/deck/' + deckId + '/draw/?count=1');
+            const data = await response.json();
+            deckLenght = data.remaining;
+            for (let card of data.cards) {
+                var newCard = getCardData(card);
+                players[currentPlayer].Hand.push(newCard);
+                renderCard(newCard, currentPlayer);
+                updatePoints();
+                updateDeckLenght();
+                check();
+            }
         }
 
-        function stay()
+        const stay = () =>
         {
             if (currentPlayer != players.length-1) {
                 document.getElementById('player_' + currentPlayer).classList.remove('active');
                 currentPlayer += 1;
                 document.getElementById('player_' + currentPlayer).classList.add('active');
-            }
 
+                if(players[currentPlayer].Name == "Bot")
+                {
+                    botTurn(players[currentPlayer]);
+                }
+            }
             else {
+                document.getElementById('player_' + currentPlayer).classList.remove('active');
                 end();
             }
         }
 
-        function end()
+        const botTurn = async (bot : Player) => {
+            while(bot.Points < 21)
+            {
+                if(bot.Points < 15)
+                {
+                    await hitMe();
+                }
+                else
+                {
+                    var random = Math.random();
+                    if(random < 0.5)
+                    {
+                        await hitMe();
+                    }
+                    else{
+                        break;
+                    }
+                }
+            }
+
+            stay();
+        }
+
+        const end = () =>
         {
             let winner = -1;
             let score = 0;
@@ -222,7 +286,7 @@
             document.getElementById("status").style.display = "inline-block";
         }
 
-        function check()
+        const check = () =>
         {
             if (players[currentPlayer].Points > 21)
             {
@@ -232,22 +296,24 @@
             }
         }
 
-        function updateDeck()
+        const updateDeckLenght = () =>
         {
             document.getElementById('deckcount').innerHTML = "" + deckLenght;
         }
 
-        function Restart()
+        const Restart = () =>
         {
-            startblackjack(players.length);
+            startblackjack(botPlayer);
         }
 
-        function Return()
+        const Return = () =>
         {
-            (<HTMLInputElement>document.getElementById('btnStart1')).value = 'Start 1 player';
-            document.getElementById('btnStart1').onclick = () => startblackjack(1);
-            (<HTMLInputElement>document.getElementById('btnStart2')).value = 'Start 2 player';
-            document.getElementById('btnStart2').onclick = () => startblackjack(2);
+            (<HTMLInputElement>document.getElementById('btnStart1')).value = 'Start 1 player game';
+            document.getElementById('btnStart1').onclick = () => startblackjack(false);
+            (<HTMLInputElement>document.getElementById('btnStart2')).value = 'Start 2 player game';
+            document.getElementById('btnStart2').onclick = () => startblackjack(true);
 
+            document.getElementById("status").style.display="none";
+            document.getElementById('deckcount').innerHTML = "" + 52;
             document.getElementById('players').innerHTML = '';
         }
