@@ -179,7 +179,7 @@ const stay = () => {
 };
 const botTurn = async (bot) => {
     while (bot.Points < 21) {
-        if (bot.Points < 15) {
+        if (bot.Points < 18) {
             await hitMe();
         }
         else {
