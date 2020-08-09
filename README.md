@@ -1,7 +1,13 @@
-#Blackjack typescript
-Simple blackjack writen in typescript, html and css.
-Game use https://deckofcardsapi.com/ api to manage deck.
+# Blackjack typescript
 
-TO:DO list:
--Write tests
--Improve visuals
+
+Simple blackjack writen in typecript, html and css
+
+  - one player and two player mode
+  - app use api https://deckofcardsapi.com/ to manage deck
+
+# To Do list!
+
+  - Write tests
+  - Improve visuals
+
