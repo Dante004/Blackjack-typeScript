@@ -32,7 +32,7 @@
         const createPlayers = (botIsPlayer : boolean) =>
         {
             players = new Array();
-            if(!botIsPlayer)
+            if(botIsPlayer == false)
             {
                 for(let i = 1; i <= 2; i++)
                 {
